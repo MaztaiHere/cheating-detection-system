@@ -4,7 +4,6 @@ import sys
 import os
 from ultralytics import YOLO
 
-# SQLite Database Connection
 def get_db_connection():
     conn = sqlite3.connect("cheating_detection.db", check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -12,8 +11,6 @@ def get_db_connection():
 
 conn = get_db_connection()
 cursor = conn.cursor()
-
-# Create table if it does not exist
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS cheating_detections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,26 +22,24 @@ cursor.execute('''
 ''')
 conn.commit()
 
-# Ensure video path is provided
 if len(sys.argv) < 2:
     print("Usage: python detect_cheating.py <video_path>")
     sys.exit(1)
 
 video_path = sys.argv[1]
-video_name = os.path.basename(video_path)  # Extract filename without path
+video_name = os.path.basename(video_path) 
 processed_folder = "processed_videos"
 os.makedirs(processed_folder, exist_ok=True)
 output_path = os.path.join(processed_folder, f"{os.path.splitext(video_name)[0]}_detected.mp4")
 
-# Load YOLO model
+
 model = YOLO('yolov8n.pt')
-allowed_classes = ["cell phone", "head phone", "cable", "wire"]  # Cheating-related objects
+allowed_classes = ["cell phone", "head phone", "cable", "wire"]  
 
 cap = cv2.VideoCapture(video_path)
-fps = int(cap.get(cv2.CAP_PROP_FPS))  # Frames per second of the video
-frame_interval = max(1, int(fps))  # Sample 1 frame per second
+fps = int(cap.get(cv2.CAP_PROP_FPS)) 
+frame_interval = max(1, int(fps)) 
 
-# Video Output Setup
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -78,7 +73,6 @@ while cap.isOpened():
 
                     print(f"⏱ Time: {time_str} | 🚨 Cheating Type: {class_name} ({confidence:.2f})")
 
-                    # Insert detection into SQLite Database
                     cursor.execute('''
                         INSERT INTO cheating_detections (timestamp, cheating_type, confidence, video_name)
                         VALUES (?, ?, ?, ?)
@@ -96,7 +90,7 @@ while cap.isOpened():
 
     out.write(frame)
 
-# Release resources
+
 cap.release()
 out.release()
 cursor.close()
