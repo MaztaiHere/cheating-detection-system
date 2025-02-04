@@ -1,0 +1,6 @@
+opencv-python
+ultralytics
+torch==1.12.0
+torchvision==0.13.0
+numpy<2.0.0 
+flask
