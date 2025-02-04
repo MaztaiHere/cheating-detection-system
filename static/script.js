@@ -50,7 +50,7 @@ setInterval(fetchDetections, 2000);
 document.addEventListener("DOMContentLoaded", fetchDetections);
 
 // Function for handling login submission
-document.getElementById("login-form").addEventListener("submit", function (e) {
+document.getElementById("login-form")?.addEventListener("submit", function (e) {
     e.preventDefault();  // Prevent form submission for validation
 
     // Get user inputs
@@ -104,7 +104,7 @@ function generateCaptcha() {
 window.onload = generateCaptcha;
 
 // Function for handling registration submission
-document.getElementById("register-form").addEventListener("submit", function (e) {
+document.getElementById("register-form")?.addEventListener("submit", function (e) {
     e.preventDefault();  // Prevent form submission for validation
 
     // Get user inputs
