@@ -47,6 +47,10 @@ def process_video(file_path):
     try:
         # Run the detect_cheating.py script once for processing the video
         result = subprocess.run(["python", "detect_cheating.py", file_path], check=True)
+        
+        # Rename and move the processed video to the processed_videos folder
+        detected_video_path = os.path.join(app.config['PROCESSED_FOLDER'], os.path.basename(file_path).rsplit('.', 1)[0] + "_detected.mp4")
+        os.rename(file_path, detected_video_path)
     except subprocess.CalledProcessError as e:
         print(f"Error: detect_cheating.py failed with exit code {e.returncode}")
         return

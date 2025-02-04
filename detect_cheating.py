@@ -1,14 +1,8 @@
 import sqlite3
 import cv2
 import sys
-from ultralytics import YOLO
 import os
-import sys
-from flask import Flask, render_template, request, redirect, url_for, jsonify
-from werkzeug.utils import secure_filename
 from ultralytics import YOLO
-import threading
-
 
 # SQLite Database Connection
 def get_db_connection():
@@ -37,11 +31,14 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 video_path = sys.argv[1]
-video_name = video_path.split("/")[-1]  # Extract filename
+video_name = os.path.basename(video_path)  # Extract filename without path
+processed_folder = "processed_videos"
+os.makedirs(processed_folder, exist_ok=True)
+output_path = os.path.join(processed_folder, f"{os.path.splitext(video_name)[0]}_detected.mp4")
 
 # Load YOLO model
 model = YOLO('yolov8n.pt')
-allowed_classes = ["cell phone", "head phone", "cable" , "wire"]  # Cheating-related objects
+allowed_classes = ["cell phone", "head phone", "cable", "wire"]  # Cheating-related objects
 
 cap = cv2.VideoCapture(video_path)
 fps = int(cap.get(cv2.CAP_PROP_FPS))  # Frames per second of the video
@@ -50,14 +47,12 @@ frame_interval = max(1, int(fps))  # Sample 1 frame per second
 # Video Output Setup
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-output_path = "cheating_detected.mp4"
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
 print("\nCheating Detections:")
 print("-------------------------")
 
-# Dictionary to store frames with detections
 detected_frames = {}
 
 while cap.isOpened():
@@ -81,7 +76,6 @@ while cap.isOpened():
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
                     confidence = float(box.conf[0])
 
-                    # Print detection
                     print(f"⏱ Time: {time_str} | 🚨 Cheating Type: {class_name} ({confidence:.2f})")
 
                     # Insert detection into SQLite Database
@@ -89,7 +83,6 @@ while cap.isOpened():
                         INSERT INTO cheating_detections (timestamp, cheating_type, confidence, video_name)
                         VALUES (?, ?, ?, ?)
                     ''', (time_str, class_name, confidence, video_name))
-
                     conn.commit()
 
                     for i in range(frame_number, frame_number + fps):
@@ -109,6 +102,5 @@ out.release()
 cursor.close()
 conn.close()
 
-print("\n✅ Processed video saved as 'cheating_detected.mp4'")
+print(f"\n✅ Processed video saved as '{output_path}'")
 print("✅ Cheating data stored in SQLite Database.")
-
