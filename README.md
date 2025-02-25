@@ -64,5 +64,5 @@ Contributors:
 Nitheeshwar: Front-End API
 Anmol Sheth: AI detection + backend
 Afthab: Backend + Database 
-Aditya: Testing videos
+Aditya: Testing videos + Front-End
 
